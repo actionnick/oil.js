@@ -14,6 +14,7 @@ class Stage extends DisplayObject {
     this.width = opts.width || 500;
     this.height = opts.height || 500;
     this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
+    this.fullScreen = opts.fullScreen || false;
   }
 
   setupCanvas() {
@@ -21,8 +22,14 @@ class Stage extends DisplayObject {
     this.drawRatio = window.devicePixelRatio || 1;
     this.canvas.width = this.width * this.drawRatio;
     this.canvas.height = this.height * this.drawRatio;
-    this.canvas.style.width = `${this.width}px`;
-    this.canvas.style.height = `${this.height}px`;
+
+    if (this.fullScreen) {
+      this.canvas.style.maxWidth = "100%";
+      this.canvas.style.maxHeight = "100%";
+    } else {
+      this.canvas.style.width = `${this.width}px`;
+      this.canvas.style.height = `${this.height}px`;
+    } 
   }
 
   start() {

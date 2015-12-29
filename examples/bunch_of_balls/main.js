@@ -5,13 +5,13 @@ var vec2 = require('gl-matrix-vec2');
 
 var canvas = document.getElementById("main-canvas");
 
-var width = 1600;
-var height = 500;
+var width = 1400;
+var height = 650  ;
 
 var stage = new Stage(canvas, {
   width: width,
   height: height,
-  backgroundColor:  "rgb(200,255,255)"
+  backgroundColor: "rgb(200,255,255)"
 });
 
 // var scene = new Scene();
@@ -22,7 +22,6 @@ for (var i = 0; i < 1000; i++) {
     y: Math.random() * stage.height,
     color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random()})`
   });
-  console.log(`rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random()})`);
 
   circle.update = function(delta) {
     if (!this.speed) {
