@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "gl-matrix-mat2d": "2.2.1-npm",
+    "gl-matrix-vec2": "^2.2.1-npm",
     "lodash": "^3.10.1"
   }
 }

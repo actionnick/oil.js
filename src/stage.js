@@ -13,7 +13,7 @@ class Stage extends DisplayObject {
   setOptions(opts) {
     this.width = opts.width || 500;
     this.height = opts.height || 500;
-    this.clearColor = opts.clearColor || "rgb(0,0,0)";
+    this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
   }
 
   setupCanvas() {
@@ -34,7 +34,8 @@ class Stage extends DisplayObject {
       this._nextFrame = timestamp => {
         if (!this.start) this.start = timestamp;
         var delta = timestamp - this.start;
-        this.tree().forEach(object => object.update && object.update(delta));
+        this.currentTree = this.tree();
+        this.currentTree.forEach(object => object.update && object.update(delta));
         this.render();
         window.requestAnimationFrame(this.nextFrame);
       }
@@ -47,7 +48,7 @@ class Stage extends DisplayObject {
     ctx.save();
     ctx.scale(this.drawRatio, this.drawRatio);
     this.clear();
-
+    this.currentTree.forEach(object => object._draw && object._draw(ctx));
     ctx.restore();
   }
 
