@@ -20,7 +20,7 @@ for (var i = 0; i < 1000; i++) {
     radius: Math.random() * 30,
     x: Math.random() * stage.width,
     y: Math.random() * stage.height,
-    color: `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random()})`
+    color: `rgba(255, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random()})`
   });
 
   circle.update = function(delta) {
