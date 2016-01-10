@@ -1,31 +1,51 @@
-var source = require('vinyl-source-stream')
-var browserify = require('browserify')
+var source = require('vinyl-source-stream');
+var browserify = require('browserify');
 var gulp = require('gulp');
 var watchify = require('watchify');
 var gutil = require('gulp-util');
+var minimist = require('minimist');
 
-gulp.task('examples', function() {
-  var stream = browserify("./examples/bunch_of_balls/main.js")
-                .transform("babelify", {presets: ["es2015"]})
-                .bundle();
-
-  return stream
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./examples/bunch_of_balls'));
+var options = minimist(process.argv.slice(2), {
+  default: { 
+    watch: false
+  }
 });
 
-var stream = watchify(browserify("./examples/bunch_of_balls/main.js")
-                .transform("babelify", {presets: ["es2015"]}));
-gulp.task('watch', bundle);
-stream.on('update', bundle); // on any dep update, runs the bundler
-stream.on('log', gutil.log); // output build logs to terminal
+gulp.task('bunch_of_balls', browserifyTask(
+  "./examples/bunch_of_balls/main.js", 
+  "./examples/bunch_of_balls", 
+  "bundle.js"
+));
+gulp.task('colliding_balls', browserifyTask(
+  "./examples/colliding_balls/main.js", 
+  "./examples/colliding_balls", 
+  "bundle.js"
+));
 
-function bundle() {
-  return stream
-    .bundle()
-    .on('error', gutil.log.bind(gutil, 'Browserify Error'))
-    .pipe(source('bundle.js'))
-    .pipe(gulp.dest('./examples/bunch_of_balls'));
+gulp.task('examples', ['bunch_of_balls', 'colliding_balls']);
+gulp.task('default', ['examples']);
+
+function browserifyTask(src, output, name) {
+  return function() {
+    name = name || "bundle.js";
+    var b = browserify(src)
+      .transform("babelify", {presets: ["es2015"]});
+
+    if (options.watch) b = watchify(b);
+
+    function bundle() {
+      return b.bundle()
+        .on('error', gutil.log.bind(gutil, 'Browserify Error'))
+        .pipe(source(name))
+        .pipe(gulp.dest(output));
+    }
+
+    if (options.watch) {
+      b.on('update', bundle);
+      b.on('log', gutil.log);
+      return bundle();
+    } else {
+      return bundle();
+    }
+  }
 }
-
-gulp.task('default',['examples']);
