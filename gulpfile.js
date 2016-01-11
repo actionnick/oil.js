@@ -16,13 +16,13 @@ gulp.task('bunch_of_balls', browserifyTask(
   "./examples/bunch_of_balls", 
   "bundle.js"
 ));
-gulp.task('colliding_balls', browserifyTask(
-  "./examples/colliding_balls/main.js", 
-  "./examples/colliding_balls", 
+gulp.task('bouncing_balls', browserifyTask(
+  "./examples/bouncing_balls/main.js", 
+  "./examples/bouncing_balls", 
   "bundle.js"
 ));
 
-gulp.task('examples', ['bunch_of_balls', 'colliding_balls']);
+gulp.task('examples', ['bunch_of_balls', 'bouncing_balls']);
 gulp.task('default', ['examples']);
 
 function browserifyTask(src, output, name) {
