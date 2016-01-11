@@ -1,7 +1,8 @@
 var DisplayObject = require('../../src/display_object');
 var Stage = require('../../src/stage');
 var Circle = require('../../src/circle');
-var vec2 = require('gl-matrix-vec2');
+var Vec2 = require('../../src/util/vec2');
+var FrameLoop = require('../../src/engines/frame_loop');
 
 var canvas = document.getElementById("main-canvas");
 
@@ -14,36 +15,38 @@ var stage = new Stage(canvas, {
   backgroundColor: "rgb(200,255,255)"
 });
 
-// var scene = new Scene();
-for (var i = 0; i < 1000; i++) {
-  var circle = new Circle({
-    radius: Math.random() * 30,
-    x: Math.random() * stage.width,
-    y: Math.random() * stage.height,
-    color: `rgba(255, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.random()})`
-  });
+stage.registerEngine(FrameLoop);
 
-  circle.update = function(delta) {
-    if (!this.speed) {
-      this.speed = Math.random() * 1;
-    }
-    if (!this.direction) {
-      this.direction = vec2.create();
-      var xDir = -1 + (Math.random() * 2);
-      var yDir = -1 + (Math.random() * 2);
-      vec2.normalize(this.direction, [xDir, yDir]);
-    }
+class Ball extends Circle {
+  constructor(opts = {}) {
+    super();
+    FrameLoop.add(this);
+    this.v = new Vec2();
+    this.a = new Vec2(0, 0.001);
+    this.m = opts.m || 1;
 
-    if (this.x > width || this.x < 0) {
-      this.direction[0] *= -1;
-    }
-    if (this.y > height || this.y < 0) {
-      this.direction[1] *= -1;
-    }
+    // differentials
+    this.d = new Vec2();
+    this.dv = new Vec2();
+  }
 
-    this.x += this.direction[0] * this.speed;
-    this.y += this.direction[1] * this.speed; 
-  }.bind(circle);
+  update(delta) {
+    var dv = this.dv, v = this.v, d = this.d, a = this.a;
 
-  stage.addChild(circle);
+    dv.x = a.x * delta;
+    dv.y = a.y * delta;
+
+    v.add(dv);
+
+    d.x = v.x * delta;
+    d.y = v.y * delta;
+
+    this.x += d.x;
+    this.y += d.y;
+  }
 }
+
+var ball = new Ball();
+ball.x = 100;
+ball.y = 0;
+stage.addChild(ball);

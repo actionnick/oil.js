@@ -7,6 +7,7 @@ class Stage extends DisplayObject {
 
     this.setOptions(opts);
     this.setupCanvas();
+    this.engines = new Set();
     this.start();
   }
 
@@ -15,6 +16,14 @@ class Stage extends DisplayObject {
     this.height = opts.height || 500;
     this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
     this.fullScreen = opts.fullScreen || false;
+  }
+
+  registerEngine(engine) {
+    this.engines.add(engine);
+  }
+
+  removeEngine(engine) {
+    this.engines.delete(engine);
   }
 
   setupCanvas() {
@@ -39,23 +48,31 @@ class Stage extends DisplayObject {
   get nextFrame() {
     if (!this._nextFrame) {
       this._nextFrame = timestamp => {
-        if (!this.start) this.start = timestamp;
-        var delta = timestamp - this.start;
-        this.currentTree = this.tree();
-        this.currentTree.forEach(object => object.update && object.update(delta));
-        this.render();
+        if (!this.lastTime) this.lastTime = timestamp;
+        var delta = timestamp - this.lastTime;
+        this.lastTime = timestamp;
+
+        var tree = this.tree();
+
+        this.engines.forEach(engine => {
+          engine.run(delta, tree);
+        });
+
+        this.render(tree);
         window.requestAnimationFrame(this.nextFrame);
       }
     }
     return this._nextFrame;
   }
 
-  render() {
+  render(tree) {
     var ctx = this.ctx;
     ctx.save();
     ctx.scale(this.drawRatio, this.drawRatio);
+
     this.clear();
-    this.currentTree.forEach(object => object._draw && object._draw(ctx));
+    tree.forEach(object => object._draw && object._draw(ctx));
+
     ctx.restore();
   }
 

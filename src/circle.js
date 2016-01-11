@@ -1,7 +1,7 @@
 var DisplayObject = require('./display_object');
 
 class Circle extends DisplayObject {
-  constructor(opts) {
+  constructor(opts={}) {
     super();
     this.setOptions(opts);
   }

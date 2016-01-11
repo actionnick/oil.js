@@ -1,7 +1,16 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
 var DisplayObject = require('../../src/display_object');
+var FrameLoop = require('../../src/engines/frame_loop');
 var Stage = require('../../src/stage');
 var Circle = require('../../src/circle');
 var vec2 = require('gl-matrix-vec2');
@@ -17,41 +26,57 @@ var stage = new Stage(canvas, {
   backgroundColor: "rgb(200,255,255)"
 });
 
+stage.registerEngine(FrameLoop);
+
+var MovingCircle = (function (_Circle) {
+  _inherits(MovingCircle, _Circle);
+
+  function MovingCircle() {
+    _classCallCheck(this, MovingCircle);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(MovingCircle).call(this));
+
+    FrameLoop.add(_this);
+
+    _this.radius = Math.random() * 30;
+    _this.x = Math.random() * stage.width;
+    _this.y = Math.random() * stage.height;
+    _this.color = 'rgba(255, ' + Math.floor(Math.random() * 255) + ', ' + Math.floor(Math.random() * 255) + ', ' + Math.random() + ')';
+
+    _this.speed = Math.random() * 1;
+    _this.direction = vec2.create();
+    var xDir = -1 + Math.random() * 2;
+    var yDir = -1 + Math.random() * 2;
+    vec2.normalize(_this.direction, [xDir, yDir]);
+    return _this;
+  }
+
+  _createClass(MovingCircle, [{
+    key: 'update',
+    value: function update() {
+      if (this.x > width || this.x < 0) {
+        this.direction[0] *= -1;
+      }
+      if (this.y > height || this.y < 0) {
+        this.direction[1] *= -1;
+      }
+
+      this.x += this.direction[0] * this.speed;
+      this.y += this.direction[1] * this.speed;
+    }
+  }]);
+
+  return MovingCircle;
+})(Circle);
+
 // var scene = new Scene();
+
 for (var i = 0; i < 1000; i++) {
-  var circle = new Circle({
-    radius: Math.random() * 30,
-    x: Math.random() * stage.width,
-    y: Math.random() * stage.height,
-    color: 'rgba(255, ' + Math.floor(Math.random() * 255) + ', ' + Math.floor(Math.random() * 255) + ', ' + Math.random() + ')'
-  });
-
-  circle.update = (function (delta) {
-    if (!this.speed) {
-      this.speed = Math.random() * 1;
-    }
-    if (!this.direction) {
-      this.direction = vec2.create();
-      var xDir = -1 + Math.random() * 2;
-      var yDir = -1 + Math.random() * 2;
-      vec2.normalize(this.direction, [xDir, yDir]);
-    }
-
-    if (this.x > width || this.x < 0) {
-      this.direction[0] *= -1;
-    }
-    if (this.y > height || this.y < 0) {
-      this.direction[1] *= -1;
-    }
-
-    this.x += this.direction[0] * this.speed;
-    this.y += this.direction[1] * this.speed;
-  }).bind(circle);
-
+  var circle = new MovingCircle();
   stage.addChild(circle);
 }
 
-},{"../../src/circle":7,"../../src/display_object":8,"../../src/stage":9,"gl-matrix-vec2":4}],2:[function(require,module,exports){
+},{"../../src/circle":7,"../../src/display_object":8,"../../src/engines/frame_loop":10,"../../src/stage":11,"gl-matrix-vec2":4}],2:[function(require,module,exports){
 /* Copyright (c) 2013, Brandon Jones, Colin MacKenzie IV. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -13266,7 +13291,9 @@ var DisplayObject = require('./display_object');
 var Circle = (function (_DisplayObject) {
   _inherits(Circle, _DisplayObject);
 
-  function Circle(opts) {
+  function Circle() {
+    var opts = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
     _classCallCheck(this, Circle);
 
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Circle).call(this));
@@ -13400,6 +13427,85 @@ var DisplayObject = (function () {
 module.exports = DisplayObject;
 
 },{"gl-matrix-mat2d":2,"lodash":6}],9:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Base = (function () {
+  function Base() {
+    _classCallCheck(this, Base);
+  }
+
+  _createClass(Base, [{
+    key: "run",
+    value: function run() {
+      throw "Subclass must implement";
+    }
+  }]);
+
+  return Base;
+})();
+
+module.exports = Base;
+
+},{}],10:[function(require,module,exports){
+"use strict";
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var Base = require('./base');
+
+/**
+ * This engine will run object.update(delta) on frame loops. Simple way to add
+ * time base functionality to your entities.
+ */
+
+var FrameLoop = (function (_Base) {
+  _inherits(FrameLoop, _Base);
+
+  function FrameLoop() {
+    _classCallCheck(this, FrameLoop);
+
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(FrameLoop).call(this));
+
+    _this.entities = new Set();
+    return _this;
+  }
+
+  _createClass(FrameLoop, [{
+    key: "add",
+    value: function add(entity) {
+      if (!entity.update) throw "Entity must implement update method";
+      this.entities.add(entity);
+    }
+  }, {
+    key: "remove",
+    value: function remove(entity) {
+      this.entities.delete(entity);
+    }
+  }, {
+    key: "run",
+    value: function run(delta, tree) {
+      this.entities.forEach(function (entity) {
+        return entity.update(delta);
+      });
+    }
+  }]);
+
+  return FrameLoop;
+})(Base);
+
+module.exports = new FrameLoop();
+
+},{"./base":9}],11:[function(require,module,exports){
 'use strict';
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -13424,6 +13530,7 @@ var Stage = (function (_DisplayObject) {
 
     _this.setOptions(opts);
     _this.setupCanvas();
+    _this.engines = new Set();
     _this.start();
     return _this;
   }
@@ -13435,6 +13542,16 @@ var Stage = (function (_DisplayObject) {
       this.height = opts.height || 500;
       this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
       this.fullScreen = opts.fullScreen || false;
+    }
+  }, {
+    key: 'registerEngine',
+    value: function registerEngine(engine) {
+      this.engines.add(engine);
+    }
+  }, {
+    key: 'removeEngine',
+    value: function removeEngine(engine) {
+      this.engines.delete(engine);
     }
   }, {
     key: 'setupCanvas',
@@ -13459,14 +13576,16 @@ var Stage = (function (_DisplayObject) {
     }
   }, {
     key: 'render',
-    value: function render() {
+    value: function render(tree) {
       var ctx = this.ctx;
       ctx.save();
       ctx.scale(this.drawRatio, this.drawRatio);
+
       this.clear();
-      this.currentTree.forEach(function (object) {
+      tree.forEach(function (object) {
         return object._draw && object._draw(ctx);
       });
+
       ctx.restore();
     }
   }, {
@@ -13486,11 +13605,13 @@ var Stage = (function (_DisplayObject) {
         this._nextFrame = function (timestamp) {
           if (!_this2.start) _this2.start = timestamp;
           var delta = timestamp - _this2.start;
-          _this2.currentTree = _this2.tree();
-          _this2.currentTree.forEach(function (object) {
-            return object.update && object.update(delta);
+          var tree = _this2.tree();
+
+          _this2.engines.forEach(function (engine) {
+            engine.run(delta, tree);
           });
-          _this2.render();
+
+          _this2.render(tree);
           window.requestAnimationFrame(_this2.nextFrame);
         };
       }
