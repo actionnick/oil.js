@@ -13542,6 +13542,8 @@ var Stage = (function (_DisplayObject) {
       this.height = opts.height || 500;
       this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
       this.fullScreen = opts.fullScreen || false;
+      this.minFPS = opts.minFPS || 60;
+      this.minDelta = 1000 / this.minFPS;
     }
   }, {
     key: 'registerEngine',
@@ -13603,8 +13605,10 @@ var Stage = (function (_DisplayObject) {
 
       if (!this._nextFrame) {
         this._nextFrame = function (timestamp) {
-          if (!_this2.start) _this2.start = timestamp;
-          var delta = timestamp - _this2.start;
+          if (!_this2.lastTime) _this2.lastTime = timestamp;
+          var delta = Math.min(timestamp - _this2.lastTime, _this2.minFPS);
+          _this2.lastTime = timestamp;
+
           var tree = _this2.tree();
 
           _this2.engines.forEach(function (engine) {

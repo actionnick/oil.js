@@ -16,6 +16,8 @@ class Stage extends DisplayObject {
     this.height = opts.height || 500;
     this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
     this.fullScreen = opts.fullScreen || false;
+    this.minFPS = opts.minFPS || 60;
+    this.minDelta = 1000 / this.minFPS;
   }
 
   registerEngine(engine) {
@@ -38,7 +40,7 @@ class Stage extends DisplayObject {
     } else {
       this.canvas.style.width = `${this.width}px`;
       this.canvas.style.height = `${this.height}px`;
-    } 
+    }
   }
 
   start() {
@@ -49,7 +51,7 @@ class Stage extends DisplayObject {
     if (!this._nextFrame) {
       this._nextFrame = timestamp => {
         if (!this.lastTime) this.lastTime = timestamp;
-        var delta = timestamp - this.lastTime;
+        var delta = Math.min(timestamp - this.lastTime, this.minFPS);
         this.lastTime = timestamp;
 
         var tree = this.tree();

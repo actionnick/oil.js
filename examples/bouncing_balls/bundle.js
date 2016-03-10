@@ -86,7 +86,7 @@ var Ball = (function (_Circle) {
   return Ball;
 })(Circle);
 
-for (var i = 0; i < 300; i++) {
+for (var i = 0; i < 500; i++) {
   var ball = new Ball({
     bounciness: Math.random() * 0.5 + 0.5
   });
@@ -13564,6 +13564,8 @@ var Stage = (function (_DisplayObject) {
       this.height = opts.height || 500;
       this.clearColor = opts.clearColor || opts.backgroundColor || "rgb(255,255,255)";
       this.fullScreen = opts.fullScreen || false;
+      this.minFPS = opts.minFPS || 60;
+      this.minDelta = 1000 / this.minFPS;
     }
   }, {
     key: 'registerEngine',
@@ -13626,7 +13628,7 @@ var Stage = (function (_DisplayObject) {
       if (!this._nextFrame) {
         this._nextFrame = function (timestamp) {
           if (!_this2.lastTime) _this2.lastTime = timestamp;
-          var delta = timestamp - _this2.lastTime;
+          var delta = Math.min(timestamp - _this2.lastTime, _this2.minFPS);
           _this2.lastTime = timestamp;
 
           var tree = _this2.tree();

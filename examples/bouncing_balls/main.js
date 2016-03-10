@@ -58,7 +58,7 @@ class Ball extends Circle {
   }
 }
 
-for (var i = 0; i < 300; i++) {
+for (var i = 0; i < 500; i++) {
   var ball = new Ball({
     bounciness: (Math.random() * 0.5) + 0.5
   });
